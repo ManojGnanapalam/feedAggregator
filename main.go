@@ -1,23 +1,40 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/ManojGnanapalam/feedAggregator/handler"
+	"github.com/ManojGnanapalam/feedAggregator/internal/database"
+	"github.com/ManojGnanapalam/feedAggregator/shared"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func main() {
 	godotenv.Load(".env")
 
 	portNum := os.Getenv("PORT")
-
 	if portNum == "" {
 		log.Panic("Port is not found in the environment")
+	}
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Panic("Data Base URL is not found in the environment")
+	}
+	conn, error := sql.Open("postgres", dbURL)
+	if error != nil {
+		log.Fatal("Database not connected ", error)
+	}
+
+	apiCfg := &handler.LocalApiconfig{
+		ApiConfig: shared.ApiConfig{
+			DB: database.New(conn),
+		},
 	}
 
 	router := chi.NewRouter()
@@ -33,6 +50,7 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/ready", handler.HandlerReadiness)
 	v1Router.Get("/err", handler.HandlerErr)
+	v1Router.Post("/user", apiCfg.HandlerCreateUser)
 
 	router.Mount("/v1", v1Router)
 
