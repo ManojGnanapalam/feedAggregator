@@ -8,7 +8,8 @@ import (
 
 	"github.com/ManojGnanapalam/feedAggregator/handler"
 	"github.com/ManojGnanapalam/feedAggregator/internal/database"
-	"github.com/ManojGnanapalam/feedAggregator/shared"
+	"github.com/ManojGnanapalam/feedAggregator/internal/middleware"
+	"github.com/ManojGnanapalam/feedAggregator/internal/mytype"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	apiCfg := &handler.LocalApiconfig{
-		ApiConfig: shared.ApiConfig{
+		ApiConfig: mytype.ApiConfig{
 			DB: database.New(conn),
 		},
 	}
@@ -50,8 +51,9 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/ready", handler.HandlerReadiness)
 	v1Router.Get("/err", handler.HandlerErr)
-	v1Router.Post("/user", apiCfg.HandlerCreateUser)
-
+	v1Router.Post("/users", apiCfg.HandlerCreateUser)
+	v1Router.Get("/users", middleware.MiddlewareAuth((*middleware.LocalApiconfig)(apiCfg), apiCfg.HandlerGetUser))
+	v1Router.Post("/rss", middleware.MiddlewareAuth((*middleware.LocalApiconfig)(apiCfg), apiCfg.HandlerCreateFeed))
 	router.Mount("/v1", v1Router)
 
 	srv := &http.Server{
@@ -63,5 +65,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
