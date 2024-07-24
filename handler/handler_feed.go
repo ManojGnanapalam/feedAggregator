@@ -42,3 +42,13 @@ func (apiCfg *LocalApiconfig) HandlerCreateFeed(w http.ResponseWriter, r *http.R
 func (apiCfg *LocalApiconfig) HandlerGetFeed(w http.ResponseWriter, r *http.Request, feed database.Feed) {
 	respond.RespondJSON(w, 200, feed)
 }
+
+func (apiCfg *LocalApiconfig) HandlerGetFeeds(w http.ResponseWriter, r *http.Request) {
+	feeds, err := apiCfg.DB.GetFeeds(r.Context())
+	if err != nil {
+		respond.ResponseWithError(w, 400, fmt.Sprintf("could not create user:%v", err))
+		return
+	}
+	respond.RespondJSON(w, 200, feeds)
+
+}
