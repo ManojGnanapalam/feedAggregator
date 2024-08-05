@@ -56,6 +56,8 @@ func main() {
 	v1Router.Post("/rssfeed", middleware.MiddlewareAuth((*middleware.LocalApiconfig)(apiCfg), apiCfg.HandlerCreateFeed))
 	v1Router.Get("/rssfeeds", apiCfg.HandlerGetFeeds)
 	v1Router.Post("/feed_follows", middleware.MiddlewareAuth((*middleware.LocalApiconfig)(apiCfg), apiCfg.HandlerCreateFeedFollow))
+	v1Router.Get("/feed_follows", middleware.MiddlewareAuth((*middleware.LocalApiconfig)(apiCfg), apiCfg.HandlerGetFeedFollow))
+	v1Router.Delete("/feed_follow/{feedFollowID}", middleware.MiddlewareAuth((*middleware.LocalApiconfig)(apiCfg), apiCfg.HandlerDeleteFeedFollow))
 	router.Mount("/v1", v1Router)
 
 	srv := &http.Server{
